@@ -54,4 +54,8 @@ public class Problem {
     private void calculateSumOfP() {
         sumOfP = jobs.stream().mapToInt(Job::getP).sum();
     }
+
+    public SubProblem getProblemWithH(double h){
+        return subProblems.get(h);
+    }
 }

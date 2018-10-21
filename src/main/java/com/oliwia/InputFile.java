@@ -9,17 +9,17 @@ import java.util.Scanner;
 public class InputFile {
     private List<Problem> problems;
     private int numberOfProblems;
-    private String fileName;
+    private int n;
 
-    public InputFile(String fileName) {
-        this.fileName = fileName;
+    public InputFile(int n) {
+        this.n = n;
         problems = new ArrayList<>();
         readInput();
     }
 
     private void readInput() {
         try {
-            Scanner in = new Scanner(new FileReader("src/main/resources/com/oliwia/examples/" + fileName));
+            Scanner in = new Scanner(new FileReader("src/main/resources/com/oliwia/examples/sch" + n + ".txt"));
             this.numberOfProblems = in.nextInt();
             for (int i = 0; i < numberOfProblems; i++) {
                 int numberOfJobs = in.nextInt();
@@ -37,5 +37,14 @@ public class InputFile {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public Problem getKthProblem(int k){
+        return problems.get(k-1);
+    }
+
+    public SubProblem getKthProblemWithH(int k, double h){
+        Problem kthProblem = getKthProblem(k);
+        return kthProblem.getProblemWithH(h);
     }
 }

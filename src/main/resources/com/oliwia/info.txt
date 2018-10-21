@@ -1,0 +1,13 @@
+na wejściu (z konsoli n k h)
+n: liczba zadań n= 10 sch10.txt
+k: k=3 3-cia instancja
+h: h=0.3 d = ceil(sum ...)*h
+
+wyjście: rozwiązanie + wartość kryterium
+
+Weryfikator we: n, k, h program(heurystyka)
+weryfikator też mierzy czas
+
+wyj�cie weryfikator:
+
+z linii poleceń (127324.bat, Windows)
