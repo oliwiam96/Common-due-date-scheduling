@@ -8,6 +8,6 @@ wyjście: rozwiązanie + wartość kryterium
 Weryfikator we: n, k, h program(heurystyka)
 weryfikator też mierzy czas
 
-wyj�cie weryfikator:
+wyjście weryfikator:
 
 z linii poleceń (127324.bat, Windows)

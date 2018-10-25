@@ -20,6 +20,8 @@ public class InputFile {
     private void readInput() {
         try {
             Scanner in = new Scanner(new FileReader("src/main/resources/com/oliwia/examples/sch" + n + ".txt"));
+            //Scanner in = new Scanner(new FileReader("sch" + n + ".txt"));
+
             this.numberOfProblems = in.nextInt();
             for (int i = 0; i < numberOfProblems; i++) {
                 int numberOfJobs = in.nextInt();
@@ -28,7 +30,7 @@ public class InputFile {
                     int p = in.nextInt();
                     int a = in.nextInt();
                     int b = in.nextInt();
-                    Job job = new Job(p, a, b);
+                    Job job = new Job(p, a, b, j);
                     jobs.add(job);
                 }
                 Problem problem = new Problem(jobs, numberOfJobs, i+1);

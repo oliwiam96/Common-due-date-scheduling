@@ -4,11 +4,13 @@ public class Job {
     private int p;
     private int a;
     private int b;
+    private int indexInInputFile;
 
-    public Job(int p, int a, int b) {
+    public Job(int p, int a, int b, int indexInInputFile) {
         this.p = p;
         this.a = a;
         this.b = b;
+        this.indexInInputFile = indexInInputFile;
     }
 
     public int getP() {
@@ -33,5 +35,13 @@ public class Job {
 
     public void setB(int b) {
         this.b = b;
+    }
+
+    public int getIndexInInputFile() {
+        return indexInInputFile;
+    }
+
+    public void setIndexInInputFile(int indexInInputFile) {
+        this.indexInInputFile = indexInInputFile;
     }
 }

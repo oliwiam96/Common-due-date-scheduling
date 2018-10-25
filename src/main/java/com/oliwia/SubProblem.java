@@ -1,15 +1,13 @@
 package com.oliwia;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 public class SubProblem {
     private double h;
     private Problem problem;
-    private int sumOfEarliness;
-    private int sumOfTardiness;
     private int dueDate;
     private List<Job> executedJobsInOrder;
     private int firstJobMoment; // must be >= 0 and of course should be <= dueDate
@@ -43,8 +41,8 @@ public class SubProblem {
 
     private void insertFistJob() {
         // find the worst job and put it as good as possible
-        Job jobWithMaxA = getJobWithMaxA();
-        Job jobWithMaxB = getJobWithMaxB();
+        Job jobWithMaxA = getJobWithMaxA(this.problem.getJobs());
+        Job jobWithMaxB = getJobWithMaxB(this.problem.getJobs());
         if (jobWithMaxA.getA() > jobWithMaxB.getB()) {
             // if too early is that bad, start just after due date
             this.firstJobMoment = dueDate;
@@ -58,32 +56,254 @@ public class SubProblem {
     }
 
     public void solve() {
-        insertFistJob();
-
-        Job jobWithMaxA = getJobWithMaxA();
-        Job jobWithMaxB = getJobWithMaxB();
-
-
+//        insertFistJob();
+//
+//        Job jobWithMaxA = getJobWithMaxA();
+//        Job jobWithMaxB = getJobWithMaxB();
+        if (h <= 0.5) {
+            solveGreedy3();
+        } else {
+            solveGreedy4();
+        }
     }
 
-    public int getSolutionValue() {
-        return sumOfEarliness + sumOfTardiness;
+    public void solveGreedy3() {
+        List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
+        int time = 0;
+        boolean wasShuffled = false;
+        for (int i = 0; i < problem.getNumberOfJobs(); i++) {
+            Job jobToInsert;
+            if (time < dueDate) {
+                jobToInsert = getBestJobBeforeDueDate(leftJobsToInsert, time);
+
+            } else {
+                if (!wasShuffled) {
+                    shuffle();
+                    wasShuffled = true;
+                }
+                jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
+            }
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(jobToInsert);
+            time += jobToInsert.getP();
+        }
+        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        System.out.println(executedJobsInOrder.size());
+        System.out.println("Cost: " + cost);
+    }
+
+    public void solveGreedy4() {
+        // back in time
+        List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
+        int time = getProblem().getSumOfP();
+        boolean wasShuffled = false;
+        for (int i = 0; i < problem.getNumberOfJobs(); i++) {
+            Job jobToInsert;
+            if (time > dueDate) {
+                jobToInsert = getBestJobBeforeEnd(leftJobsToInsert, time);
+                // System.out.println(time);
+
+            } else {
+                if (!wasShuffled) {
+                    shuffleAfterDueDate();
+                    wasShuffled = true;
+                }
+                jobToInsert = getJobWithMaxAExtended(leftJobsToInsert);
+            }
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(0, jobToInsert);
+            time -= jobToInsert.getP();
+        }
+        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        System.out.println(executedJobsInOrder.size());
+        System.out.println("Cost: " + cost);
+    }
+
+    private Job getJobWithMaxAExtended(List<Job> jobsToCheck) {
+        return Collections.max(jobsToCheck, new Comparator<Job>() {
+            @Override
+            public int compare(Job o1, Job o2) {
+                if (o1.getA() * o2.getP() > o2.getA() * o1.getP()) {
+                    return 1;
+                }
+                if (o1.getA() * o2.getP() > o2.getA() * o1.getP()) {
+                    return 0;
+                }
+                return -1;
+            }
+        });
+    }
+
+    private void shuffleAfterDueDate() {
+        List<Job> leftJobsToInsert = new ArrayList<>(executedJobsInOrder);
+        executedJobsInOrder.clear();
+        while (!leftJobsToInsert.isEmpty()) {
+            Job jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(jobToInsert);
+        }
+    }
+
+    private void shuffle() {
+        List<Job> leftJobsToInsert = new ArrayList<>(executedJobsInOrder);
+        executedJobsInOrder.clear();
+        while (!leftJobsToInsert.isEmpty()) {
+            Job jobToInsert = getJobWithMinAExtended(leftJobsToInsert);
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(jobToInsert);
+        }
+    }
+
+
+    public void solveGreedy() {
+        List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
+        int time = 0;
+        for (int i = 0; i < problem.getNumberOfJobs(); i++) {
+            Job jobToInsert;
+            if (time < dueDate) {
+                jobToInsert = getJobWithMinAExtended(leftJobsToInsert);
+                System.out.println("here");
+            } else {
+                jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
+            }
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(jobToInsert);
+            time += jobToInsert.getP();
+        }
+        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        System.out.println("Cost: " + cost);
+    }
+
+    public void solveGreedy2() {
+        List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
+        int time = 0;
+        for (int i = 0; i < problem.getNumberOfJobs(); i++) {
+            Job jobToInsert;
+            if (time < dueDate) {
+                jobToInsert = getJobWithMaxB(leftJobsToInsert);
+            } else {
+                jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
+            }
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(jobToInsert);
+            time += jobToInsert.getP();
+        }
+        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        System.out.println("Cost: " + cost);
+    }
+
+    public void solveRandomly() {
+        Random generator = new Random();
+        List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
+        for (int i = 0; i < problem.getNumberOfJobs(); i++) {
+            int index = generator.nextInt(leftJobsToInsert.size());
+            Job nextJob = leftJobsToInsert.remove(index);
+            executedJobsInOrder.add(nextJob);
+        }
+        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        System.out.println("Cost: " + cost);
     }
 
     public void saveSolutionToFile() {
-        // TODO
+        String fileContent = String.valueOf(getCostFunctionForOrder(executedJobsInOrder)) + "\n";
+        String jobsOrder = "";
+        for (int i = 0; i < executedJobsInOrder.size(); i++) {
+            fileContent += executedJobsInOrder.get(i).getIndexInInputFile();
+            if (i != executedJobsInOrder.size() - 1) {
+                fileContent += " ";
+            }
+        }
+        fileContent += "\n";
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/com/oliwia/output/sch_127324" +
+                    "_" + problem.getNumberOfJobs() + "_" + problem.getK() + "_" + (int) (getH()*10) + ".out"));
+            writer.write(fileContent);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    private Job getJobWithMaxA() {
-        return Collections.max(this.problem.getJobs(), Comparator.comparing(Job::getA));
+    private Job getJobWithMaxA(List<Job> jobsToCheck) {
+        return Collections.max(jobsToCheck, Comparator.comparing(Job::getA));
 
     }
 
-    private Job getJobWithMaxB() {
-        return Collections.max(this.problem.getJobs(), Comparator.comparing(Job::getB));
+    private Job getJobWithMaxB(List<Job> jobsToCheck) {
+        return Collections.max(jobsToCheck, Comparator.comparing(Job::getB));
     }
 
-    public String printInfo() {
+    private Job getJobWithMaxBExtended(List<Job> jobsToCheck) {
+        return Collections.max(jobsToCheck, new Comparator<Job>() {
+            @Override
+            public int compare(Job o1, Job o2) {
+                if (o1.getB() * o2.getP() > o2.getB() * o1.getP()) {
+                    return 1;
+                }
+                if (o1.getB() * o2.getP() == o2.getB() * o1.getP()) {
+                    return 0;
+                }
+                return -1;
+            }
+        });
+    }
+
+    private Job getJobWithMinAExtended(List<Job> jobsToCheck) {
+        return Collections.min(jobsToCheck, new Comparator<Job>() {
+            @Override
+            public int compare(Job o1, Job o2) {
+                if (o1.getA() * o2.getP() > o2.getA() * o1.getP()) {
+                    return 1;
+                } else {
+                    return -1;
+                }
+            }
+        });
+    }
+
+    private Job getJobWithMinA(List<Job> jobsToCheck) {
+        return Collections.min(jobsToCheck, Comparator.comparing(Job::getA));
+
+    }
+
+    private Job getJobWithMinB(List<Job> jobsToCheck) {
+        return Collections.min(jobsToCheck, Comparator.comparing(Job::getB));
+    }
+
+    private Job getBestJobBeforeDueDate(List<Job> jobsToCheck, int time) {
+        return Collections.min(jobsToCheck, Comparator.comparing(job -> {
+            double coefficient = ((double) (dueDate - time)) / dueDate;
+            return job.getA() * coefficient - job.getB() * (1 - coefficient);
+        }));
+    }
+
+    private Job getBestJobBeforeEnd(List<Job> jobsToCheck, int time) {
+        return Collections.min(jobsToCheck, Comparator.comparing(job -> {
+            double coefficient = ((double) (time - dueDate)) / (problem.getSumOfP() - dueDate);
+            return job.getB() * coefficient - job.getA() * (1 - coefficient);
+        }));
+    }
+
+
+    public String getInfo() {
         return "SubProblem with h: " + getH() + " k: " + getProblem().getK() + " SUM_P: " + getProblem().getSumOfP();
+    }
+
+    public int getCostFunctionForOrder(List<Job> executedJobsInOrder) {
+        int time = 0;
+        int cost = 0;
+        for (Job job : executedJobsInOrder) {
+            if (time + job.getP() < this.dueDate) {
+                // earliness -> a
+                cost += (this.dueDate - time - job.getP()) * job.getA();
+            }
+            if (time + job.getP() > this.dueDate) {
+                // tardiness -> b
+                cost += (time + job.getP() - this.dueDate) * job.getB();
+            }
+            time += job.getP();
+        }
+        return cost;
     }
 }
