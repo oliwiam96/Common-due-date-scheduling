@@ -39,7 +39,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>com.oliwia.App</mainClass>
+              <mainClass>com.oliwia.solver.Solver</mainClass>
             </manifest>
           </archive>
         </configuration>

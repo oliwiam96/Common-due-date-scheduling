@@ -1,6 +1,8 @@
-package com.oliwia;
+package com.oliwia.solver;
 
-public class App {
+import com.oliwia.common.FileReaderWriter;
+
+public class Solver {
     public static void main(String[] args) {
         System.out.println("Oliwia Masian 127324");
 

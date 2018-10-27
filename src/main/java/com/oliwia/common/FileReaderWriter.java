@@ -1,4 +1,8 @@
-package com.oliwia;
+package com.oliwia.common;
+
+import com.oliwia.solver.Job;
+import com.oliwia.solver.Problem;
+import com.oliwia.solver.SubProblem;
 
 import java.io.BufferedWriter;
 import java.io.FileReader;
@@ -60,5 +64,27 @@ public class FileReaderWriter {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static int getDeclaredCostAndSetOrder(SubProblem subProblem, String fileName){
+        int declaredCost = 0;
+        try {
+            Scanner in = new Scanner(new FileReader(fileName));
+
+            declaredCost = in.nextInt();
+            in.nextLine();
+            String[] indexes = in.nextLine().split(" ");
+
+            List<Job> allJobs = subProblem.getProblem().getJobs();
+            List<Job> executedJobInOrder = subProblem.getExecutedJobsInOrder();
+            for(int i = 0; i < indexes.length; i++){
+                int index = Integer.parseInt(indexes[i]);
+                executedJobInOrder.add(allJobs.get(index));
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return declaredCost;
     }
 }

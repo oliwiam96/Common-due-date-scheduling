@@ -1,4 +1,4 @@
-package com.oliwia;
+package com.oliwia.solver;
 
 public class Job {
     private int p;
