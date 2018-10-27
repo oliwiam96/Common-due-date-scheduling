@@ -10,7 +10,6 @@ public class SubProblem {
     private Problem problem;
     private int dueDate;
     private List<Job> executedJobsInOrder;
-    private int firstJobMoment; // must be >= 0 and of course should be <= dueDate
 
     public SubProblem(double h, Problem problem) {
         this.h = h;
@@ -39,21 +38,6 @@ public class SubProblem {
         dueDate = (int) Math.floor(h * problem.getSumOfP());
     }
 
-    private void insertFistJob() {
-        // find the worst job and put it as good as possible
-        Job jobWithMaxA = getJobWithMaxA(this.problem.getJobs());
-        Job jobWithMaxB = getJobWithMaxB(this.problem.getJobs());
-        if (jobWithMaxA.getA() > jobWithMaxB.getB()) {
-            // if too early is that bad, start just after due date
-            this.firstJobMoment = dueDate;
-            executedJobsInOrder.add(jobWithMaxA);
-        } else {
-            // if too late is that bad, end just before due date
-            executedJobsInOrder.add(jobWithMaxB);
-            int preferredStartMoment = dueDate - jobWithMaxB.getB();
-            this.firstJobMoment = (preferredStartMoment > 0) ? preferredStartMoment : 0;
-        }
-    }
 
     public void solve() {
 //        insertFistJob();
@@ -87,7 +71,7 @@ public class SubProblem {
             executedJobsInOrder.add(jobToInsert);
             time += jobToInsert.getP();
         }
-        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        int cost = getCostFunction();
         System.out.println(executedJobsInOrder.size());
         System.out.println("Cost: " + cost);
     }
@@ -114,7 +98,7 @@ public class SubProblem {
             executedJobsInOrder.add(0, jobToInsert);
             time -= jobToInsert.getP();
         }
-        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        int cost = getCostFunction();
         System.out.println(executedJobsInOrder.size());
         System.out.println("Cost: " + cost);
     }
@@ -170,7 +154,7 @@ public class SubProblem {
             executedJobsInOrder.add(jobToInsert);
             time += jobToInsert.getP();
         }
-        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        int cost = getCostFunction();
         System.out.println("Cost: " + cost);
     }
 
@@ -188,7 +172,7 @@ public class SubProblem {
             executedJobsInOrder.add(jobToInsert);
             time += jobToInsert.getP();
         }
-        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        int cost = getCostFunction();
         System.out.println("Cost: " + cost);
     }
 
@@ -200,30 +184,10 @@ public class SubProblem {
             Job nextJob = leftJobsToInsert.remove(index);
             executedJobsInOrder.add(nextJob);
         }
-        int cost = getCostFunctionForOrder(executedJobsInOrder);
+        int cost = getCostFunction();
         System.out.println("Cost: " + cost);
     }
 
-    public void saveSolutionToFile() {
-        String fileContent = String.valueOf(getCostFunctionForOrder(executedJobsInOrder)) + "\n";
-        String jobsOrder = "";
-        for (int i = 0; i < executedJobsInOrder.size(); i++) {
-            fileContent += executedJobsInOrder.get(i).getIndexInInputFile();
-            if (i != executedJobsInOrder.size() - 1) {
-                fileContent += " ";
-            }
-        }
-        fileContent += "\n";
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("src/main/resources/com/oliwia/output/sch_127324" +
-                    "_" + problem.getNumberOfJobs() + "_" + problem.getK() + "_" + (int) (getH()*10) + ".out"));
-            writer.write(fileContent);
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private Job getJobWithMaxA(List<Job> jobsToCheck) {
         return Collections.max(jobsToCheck, Comparator.comparing(Job::getA));
@@ -290,7 +254,7 @@ public class SubProblem {
         return "SubProblem with h: " + getH() + " k: " + getProblem().getK() + " SUM_P: " + getProblem().getSumOfP();
     }
 
-    public int getCostFunctionForOrder(List<Job> executedJobsInOrder) {
+    public int getCostFunction() {
         int time = 0;
         int cost = 0;
         for (Job job : executedJobsInOrder) {
@@ -305,5 +269,9 @@ public class SubProblem {
             time += job.getP();
         }
         return cost;
+    }
+
+    public List<Job> getExecutedJobsInOrder() {
+        return executedJobsInOrder;
     }
 }

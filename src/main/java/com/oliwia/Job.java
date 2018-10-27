@@ -17,31 +17,16 @@ public class Job {
         return p;
     }
 
-    public void setP(int p) {
-        this.p = p;
-    }
-
     public int getA() {
         return a;
     }
 
-    public void setA(int a) {
-        this.a = a;
-    }
 
     public int getB() {
         return b;
     }
 
-    public void setB(int b) {
-        this.b = b;
-    }
-
     public int getIndexInInputFile() {
         return indexInInputFile;
-    }
-
-    public void setIndexInInputFile(int indexInInputFile) {
-        this.indexInInputFile = indexInInputFile;
     }
 }
