@@ -1,8 +1,5 @@
 package com.oliwia;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 public class SubProblem {
@@ -22,28 +19,41 @@ public class SubProblem {
         return h;
     }
 
-    public void setH(double h) {
-        this.h = h;
-    }
-
     public Problem getProblem() {
         return problem;
-    }
-
-    public void setProblem(Problem problem) {
-        this.problem = problem;
     }
 
     private void calculateDueDate() {
         dueDate = (int) Math.floor(h * problem.getSumOfP());
     }
 
+    public int getCostFunction() {
+        int time = 0;
+        int cost = 0;
+        for (Job job : executedJobsInOrder) {
+            if (time + job.getP() < this.dueDate) {
+                // earliness -> a
+                cost += (this.dueDate - time - job.getP()) * job.getA();
+            }
+            if (time + job.getP() > this.dueDate) {
+                // tardiness -> b
+                cost += (time + job.getP() - this.dueDate) * job.getB();
+            }
+            time += job.getP();
+        }
+        return cost;
+    }
+
+    public List<Job> getExecutedJobsInOrder() {
+        return executedJobsInOrder;
+    }
+
+    public String getInfo() {
+        return "SubProblem with h: " + getH() + " k: " + getProblem().getK() + " SUM_P: " + getProblem().getSumOfP();
+    }
+
 
     public void solve() {
-//        insertFistJob();
-//
-//        Job jobWithMaxA = getJobWithMaxA();
-//        Job jobWithMaxB = getJobWithMaxB();
         if (h <= 0.5) {
             solveGreedy3();
         } else {
@@ -62,7 +72,7 @@ public class SubProblem {
 
             } else {
                 if (!wasShuffled) {
-                    shuffle();
+                    shuffleBeforeDueDate();
                     wasShuffled = true;
                 }
                 jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
@@ -85,7 +95,6 @@ public class SubProblem {
             Job jobToInsert;
             if (time > dueDate) {
                 jobToInsert = getBestJobBeforeEnd(leftJobsToInsert, time);
-                // System.out.println(time);
 
             } else {
                 if (!wasShuffled) {
@@ -128,7 +137,7 @@ public class SubProblem {
         }
     }
 
-    private void shuffle() {
+    private void shuffleBeforeDueDate() {
         List<Job> leftJobsToInsert = new ArrayList<>(executedJobsInOrder);
         executedJobsInOrder.clear();
         while (!leftJobsToInsert.isEmpty()) {
@@ -247,31 +256,5 @@ public class SubProblem {
             double coefficient = ((double) (time - dueDate)) / (problem.getSumOfP() - dueDate);
             return job.getB() * coefficient - job.getA() * (1 - coefficient);
         }));
-    }
-
-
-    public String getInfo() {
-        return "SubProblem with h: " + getH() + " k: " + getProblem().getK() + " SUM_P: " + getProblem().getSumOfP();
-    }
-
-    public int getCostFunction() {
-        int time = 0;
-        int cost = 0;
-        for (Job job : executedJobsInOrder) {
-            if (time + job.getP() < this.dueDate) {
-                // earliness -> a
-                cost += (this.dueDate - time - job.getP()) * job.getA();
-            }
-            if (time + job.getP() > this.dueDate) {
-                // tardiness -> b
-                cost += (time + job.getP() - this.dueDate) * job.getB();
-            }
-            time += job.getP();
-        }
-        return cost;
-    }
-
-    public List<Job> getExecutedJobsInOrder() {
-        return executedJobsInOrder;
     }
 }
