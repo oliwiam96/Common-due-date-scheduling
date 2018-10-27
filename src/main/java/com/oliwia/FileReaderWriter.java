@@ -24,9 +24,8 @@ public class FileReaderWriter {
                     Job job = new Job(p, a, b, j);
                     jobs.add(job);
                 }
-                if (i == k) {
-                    Problem problem = new Problem(jobs, numberOfJobs, i + 1);
-                    return problem;
+                if (i+1 == k) {
+                    return new Problem(jobs, numberOfJobs, i + 1);
                 }
             }
         } catch (IOException ex) {
@@ -37,26 +36,26 @@ public class FileReaderWriter {
 
     public static SubProblem getKthProblemWithH(int k, int n, double h) {
         Problem problem = FileReaderWriter.getKthProblem(k, n);
-        SubProblem subProblem = new SubProblem(h, problem);
-        return subProblem;
+        return new SubProblem(h, problem);
     }
 
 
     public static void saveSolutionToFile(SubProblem subProblem) {
-        String fileContent = String.valueOf(subProblem.getCostFunction()) + "\n";
+        StringBuilder sb = new StringBuilder();
+        sb.append(subProblem.getCostFunction()).append("\n");
         for (int i = 0; i < subProblem.getExecutedJobsInOrder().size(); i++) {
-            fileContent += subProblem.getExecutedJobsInOrder().get(i).getIndexInInputFile();
+            sb.append(subProblem.getExecutedJobsInOrder().get(i).getIndexInInputFile());
             if (i != subProblem.getExecutedJobsInOrder().size() - 1) {
-                fileContent += " ";
+                sb.append(" ");
             }
         }
-        fileContent += "\n";
+        sb.append("\n");
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter("sch_127324"
                     + "_" + subProblem.getProblem().getNumberOfJobs() + "_"
                     + subProblem.getProblem().getK() + "_"
                     + (int) (subProblem.getH() * 10) + ".out"));
-            writer.write(fileContent);
+            writer.write(sb.toString());
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();

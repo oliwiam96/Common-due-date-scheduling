@@ -55,13 +55,15 @@ public class SubProblem {
 
     public void solve() {
         if (h <= 0.5) {
-            solveGreedy3();
+            solveGreedyByChoosingBeforeDueDate();
         } else {
-            solveGreedy4();
+            solveGreedyByChoosingAfterDueDate();
         }
+        int cost = getCostFunction();
+        System.out.println("Cost: " + cost);
     }
 
-    public void solveGreedy3() {
+    public void solveGreedyByChoosingBeforeDueDate() {
         List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
         int time = 0;
         boolean wasShuffled = false;
@@ -81,12 +83,9 @@ public class SubProblem {
             executedJobsInOrder.add(jobToInsert);
             time += jobToInsert.getP();
         }
-        int cost = getCostFunction();
-        System.out.println(executedJobsInOrder.size());
-        System.out.println("Cost: " + cost);
     }
 
-    public void solveGreedy4() {
+    public void solveGreedyByChoosingAfterDueDate() {
         // back in time
         List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
         int time = getProblem().getSumOfP();
@@ -107,34 +106,6 @@ public class SubProblem {
             executedJobsInOrder.add(0, jobToInsert);
             time -= jobToInsert.getP();
         }
-        int cost = getCostFunction();
-        System.out.println(executedJobsInOrder.size());
-        System.out.println("Cost: " + cost);
-    }
-
-    private Job getJobWithMaxAExtended(List<Job> jobsToCheck) {
-        return Collections.max(jobsToCheck, new Comparator<Job>() {
-            @Override
-            public int compare(Job o1, Job o2) {
-                if (o1.getA() * o2.getP() > o2.getA() * o1.getP()) {
-                    return 1;
-                }
-                if (o1.getA() * o2.getP() > o2.getA() * o1.getP()) {
-                    return 0;
-                }
-                return -1;
-            }
-        });
-    }
-
-    private void shuffleAfterDueDate() {
-        List<Job> leftJobsToInsert = new ArrayList<>(executedJobsInOrder);
-        executedJobsInOrder.clear();
-        while (!leftJobsToInsert.isEmpty()) {
-            Job jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
-            leftJobsToInsert.remove(jobToInsert);
-            executedJobsInOrder.add(jobToInsert);
-        }
     }
 
     private void shuffleBeforeDueDate() {
@@ -147,6 +118,15 @@ public class SubProblem {
         }
     }
 
+    private void shuffleAfterDueDate() {
+        List<Job> leftJobsToInsert = new ArrayList<>(executedJobsInOrder);
+        executedJobsInOrder.clear();
+        while (!leftJobsToInsert.isEmpty()) {
+            Job jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
+            leftJobsToInsert.remove(jobToInsert);
+            executedJobsInOrder.add(jobToInsert);
+        }
+    }
 
     public void solveGreedy() {
         List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
@@ -155,7 +135,6 @@ public class SubProblem {
             Job jobToInsert;
             if (time < dueDate) {
                 jobToInsert = getJobWithMinAExtended(leftJobsToInsert);
-                System.out.println("here");
             } else {
                 jobToInsert = getJobWithMaxBExtended(leftJobsToInsert);
             }
@@ -163,11 +142,9 @@ public class SubProblem {
             executedJobsInOrder.add(jobToInsert);
             time += jobToInsert.getP();
         }
-        int cost = getCostFunction();
-        System.out.println("Cost: " + cost);
     }
 
-    public void solveGreedy2() {
+    public void solveGreedyByAlwaysChoosingMaxB() {
         List<Job> leftJobsToInsert = new ArrayList<>(this.problem.getJobs());
         int time = 0;
         for (int i = 0; i < problem.getNumberOfJobs(); i++) {
@@ -181,8 +158,6 @@ public class SubProblem {
             executedJobsInOrder.add(jobToInsert);
             time += jobToInsert.getP();
         }
-        int cost = getCostFunction();
-        System.out.println("Cost: " + cost);
     }
 
     public void solveRandomly() {
@@ -193,10 +168,7 @@ public class SubProblem {
             Job nextJob = leftJobsToInsert.remove(index);
             executedJobsInOrder.add(nextJob);
         }
-        int cost = getCostFunction();
-        System.out.println("Cost: " + cost);
     }
-
 
     private Job getJobWithMaxA(List<Job> jobsToCheck) {
         return Collections.max(jobsToCheck, Comparator.comparing(Job::getA));
@@ -207,32 +179,16 @@ public class SubProblem {
         return Collections.max(jobsToCheck, Comparator.comparing(Job::getB));
     }
 
+    private Job getJobWithMaxAExtended(List<Job> jobsToCheck) {
+        return Collections.max(jobsToCheck, (o1, o2) -> Integer.compare(o1.getA() * o2.getP(), o2.getA() * o1.getP()));
+    }
+
     private Job getJobWithMaxBExtended(List<Job> jobsToCheck) {
-        return Collections.max(jobsToCheck, new Comparator<Job>() {
-            @Override
-            public int compare(Job o1, Job o2) {
-                if (o1.getB() * o2.getP() > o2.getB() * o1.getP()) {
-                    return 1;
-                }
-                if (o1.getB() * o2.getP() == o2.getB() * o1.getP()) {
-                    return 0;
-                }
-                return -1;
-            }
-        });
+        return Collections.max(jobsToCheck, (o1, o2) -> Integer.compare(o1.getB() * o2.getP(), o2.getB() * o1.getP()));
     }
 
     private Job getJobWithMinAExtended(List<Job> jobsToCheck) {
-        return Collections.min(jobsToCheck, new Comparator<Job>() {
-            @Override
-            public int compare(Job o1, Job o2) {
-                if (o1.getA() * o2.getP() > o2.getA() * o1.getP()) {
-                    return 1;
-                } else {
-                    return -1;
-                }
-            }
-        });
+        return Collections.min(jobsToCheck, (o1, o2) -> Integer.compare(o1.getA() * o2.getP(), o2.getA() * o1.getP()));
     }
 
     private Job getJobWithMinA(List<Job> jobsToCheck) {
